@@ -47,7 +47,7 @@ class Inventory_Manager:
             print(f"Product {product_name} already exists.")
     def restock_product(self, product_name, quantity, cost_per_unit):
         if product_name in self.products:
-            self.products[product_name].add_batch(Batch(quantity, cost_per_unit))
+            self.products[product_name].add_batch(quantity, cost_per_unit)
         else:
             print(f"Product {product_name} not found.")
     def simulate_demand(self,min_demand, max_demand):
@@ -113,6 +113,7 @@ def main():
 
     # CSV opslaan
     inv.save_to_csv("inventory.csv")
+
 
 
 
