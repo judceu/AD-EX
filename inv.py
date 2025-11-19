@@ -71,14 +71,15 @@ class Inventory_Manager:
                     file.write(f"{product_name}, {batch.quantity}, {batch.cost_per_unit}\n")
     def load_from_csv(self, filename):
         with open(filename, "r") as file:
+            next(file) #niet vergeten!!
             for line in file:
-                parts = line.strip.split(",")
-                product_name = parts[0]
-                batch_quantity = int(parts[1])
-                batch_cost_per_unit = float(parts[2])
+                parts = line.strip().split(",")
+                product_name = parts[0].strip()
+                batch_quantity = int(parts[1].strip())
+                batch_cost_per_unit = float(parts[2].strip())
                 if product_name not in self.products:
                     self.add_product(product_name, holding_cost=1, stockout_penalty=5)
-                self.products[product_name].add_batch(Batch(batch_quantity, batch_cost_per_unit))
+                self.products[product_name].add_batch(batch_quantity, batch_cost_per_unit)
 
     def print_inventory(self):
         print("Current Inventory:")
@@ -112,6 +113,7 @@ def main():
 
     # CSV opslaan
     inv.save_to_csv("inventory.csv")
+
 
 
 
