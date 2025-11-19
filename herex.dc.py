@@ -1,0 +1,130 @@
+class Player:
+    def __init__(self,name,number):
+        self.name = name
+        self.number = number
+
+    def __eq__(self, other):
+        if isinstance(other, Player):
+            return self.name == other.name
+        return False
+
+    def __lt__(self, other):
+        if isinstance(other, Player):
+            return self.number < other.number
+        return NotImplemented
+
+    def __str__(self):
+        return f"{self.name} ({self.number})"
+
+class Pass:
+    def __init__(self,sender,receiver,nr_of_times):
+        self.sender = sender
+        self.receiver = receiver
+        self.nr_of_times = nr_of_times
+    def get_weight(self):
+        return self.nr_of_times
+    def get_start(self):
+        return self.sender
+    def get_end(self):
+        return self.receiver
+    def __eq__(self, other):
+        if isinstance(other, Pass):
+            return self.sender == other.sender and self.receiver == other.receiver
+        return False
+    def __str__(self):
+        return f"Pass from <{self.sender.name}> to <{self.receiver.name}>"
+
+class PassGraph:
+    def __init__(self):
+        self.players = []
+        self.adj = {}
+    def add_player(self,player):
+        if player not in self.players:
+            self.players.append(player)
+            self.adj[player.name] = []
+    def has_player(self,player):
+        if isinstance(player, Player):
+            name = player.name
+        else:
+            name = player
+            return any(p.name == name for p in self.players)
+    def get_players(self,name):
+        for i in range(len(self.players)):
+            if self.players[i].name == name:
+                return self.players[i]
+        return None
+    def add_pass(self,sender,receiver,times=1):
+        if times <= 0:
+            raise ValueError
+        if not (self.has_player(sender) and self.has_player(receiver)):
+            raise ValueError("Both sender and receiver must be added first.")
+
+            # Zoek bestaande pass
+        lst = self.adj[sender.name]
+        for ps in lst:
+            if ps.sender == sender and ps.receiver == receiver:
+                ps.nr_of_times += times
+                return
+
+        # Anders nieuwe pass toevoegen
+        lst.append(Pass(sender, receiver, times))
+    def get_passes(self,sender_name,receiver_name):
+        if sender_name not in self.adj:
+            return None
+        else:
+            lst = self.adj[sender_name]
+            for ps in lst:
+                if ps.receiver.name == receiver_name:
+                    return ps
+        return None
+    def neighbors(self,sender_name):
+        return self.adj.get(sender_name, [])
+
+    def total_weight(self, subset=None):
+        if subset is None:
+            subset = [p.name for p in self.players]
+
+        subset = set(subset)  # snelle lookup
+        total = 0
+
+        for s in subset:
+            for ps in self.adj.get(s, []):
+                if ps.receiver.name in subset:
+                    total += ps.nr_of_times
+
+        return total
+
+    def pass_intensity(self,subset = None):
+        if subset is None:
+            subset = [p.name for p in self.players]
+
+        n = len(subset)
+        if n < 2:
+            return 0.0
+
+        numerator = self.total_weight(subset)
+        denominator = n * (n - 1)
+
+        return numerator / denominator
+    def top_pairs(self,k=5):
+        all_passes = []
+        for passes in self.adj.values():
+            all_passes.extend(passes)
+        all_passes.sort(key=lambda p: p.nr_of_times, reverse=True)
+        return all_passes[:k]
+
+    def distribution_form(self,sender_name):
+        lst = self.adj.get(sender_name)
+        if lst is None:
+            return []
+        result = [(ps.receiver.name, ps.nr_of_times) for ps in lst]
+        return sorted(result, key=lambda x: x[1], reverse=True)
+     def save_to_txt(self, path):
+        with open(path, "w", encoding="utf-8") as f:
+            f.write("[PLAYERS]\n")
+            for p in sorted(self.players, key=lambda x: x.name):
+                f.write(f"{p.name};{p.number}\n")
+            f.write("[PASSES]\n")
+            for sender_name in sorted(self.adj.keys()):
+                for ps in self.adj[sender_name]:
+                    f.write(f"{ps.sender.name} -> {ps.receiver.name} : {ps.nr_of_times}\n"
