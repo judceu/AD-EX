@@ -82,11 +82,10 @@ class Inventory_Manager:
                 self.products[product_name].add_batch(batch_quantity, batch_cost_per_unit)
 
     def print_inventory(self):
-        print("Current Inventory:")
-        for product_name, product in self.products.items():
-            print(f"Product: {product_name}")
-            for batch in product.batches:
-                print(f"  {batch}")
+    print("Current Inventory:")
+    for product in self.products.values():
+        print(product)
+
 def main():
     inv = Inventory_Manager()
 
@@ -113,6 +112,7 @@ def main():
 
     # CSV opslaan
     inv.save_to_csv("inventory.csv")
+
 
 
 
